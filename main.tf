@@ -13,7 +13,7 @@ resource "aws_vpc" "vpcname_vpc" {
   enable_dns_hostnames = true
   tags = merge(
     {
-      Name        = var.vpc_name
+      Name        = "${var.environment} - ${var.vpc_name}"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -38,7 +38,7 @@ resource "aws_subnet" "public_subnet" {
 
   tags = merge(
     {
-      Name        = "public-subnet-${each.value}"
+      Name        = "${var.environment} - public-subnet-${each.value}"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -63,7 +63,7 @@ resource "aws_subnet" "private_subnet" {
 
   tags = merge(
     {
-      Name        = "private-subnet-${each.value}"
+      Name        = "${var.environment} - private-subnet-${each.value}"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -83,7 +83,7 @@ resource "aws_internet_gateway" "igw" {
   
   tags = merge(
     {
-      Name        = "vpcname-igw"
+      Name        = "${var.environment} - vpcname-igw"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -103,7 +103,7 @@ resource "aws_eip" "nat_eip" {
   domain = "vpc"
   tags = merge(
     {
-      Name        = "nat-eip-${count.index + 1}"
+      Name        = "${var.environment} - nat-eip-${count.index + 1}"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -126,7 +126,7 @@ resource "aws_nat_gateway" "nat_gateway" {
   
   tags = merge(
     {
-      Name        = "nat-gateway-${each.value}"
+      Name        = "${var.environment} -nat-gateway-${each.value}"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -152,7 +152,7 @@ resource "aws_route_table" "public_route_table" {
 
   tags = merge(
     {
-      Name        = "public-route-table"
+      Name = "${var.environment} - public-route-table"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -186,7 +186,7 @@ resource "aws_route_table" "private_route_table" {
 
   tags = merge(
     {
-      Name        = "private-route-table-${each.key}"
+      Name        = "${var.environment} - private-route-table-${each.key}"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -209,7 +209,7 @@ resource "aws_route_table_association" "private_association" {
 }
 
 # Create Security Group for Web
-resource "aws_security_group" "web_sg" {
+resource "aws_security_group" "vpc_sg" {
   vpc_id = aws_vpc.vpcname_vpc.id
 
   ingress {
@@ -235,7 +235,7 @@ resource "aws_security_group" "web_sg" {
 
   tags = merge(
     {
-      Name        = "web-sg"
+      Name        = "${var.environment} - VPC-sg"
       Environment = var.environment
       Owner       = var.owner
       Project     = var.project
@@ -276,7 +276,7 @@ resource "aws_flow_log" "vpc_flow_log" {
 
 # Create CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
-  name              = "vpc-flow-logs-${aws_vpc.vpcname_vpc.id}"
+  name              = "vpc-flow-logs-${var.environment}-${aws_vpc.vpcname_vpc.id}"
   retention_in_days = var.log_retention_days
 }
 
