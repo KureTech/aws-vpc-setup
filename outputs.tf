@@ -20,3 +20,7 @@ output "flow_log_group" {
   description = "CloudWatch Flow Log Group"
   value       = aws_flow_log.vpc_flow_log.log_destination
 }
+
+output "vpc_security_group_id" {
+  value = aws_security_group.vpc_sg.id
+}

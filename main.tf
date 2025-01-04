@@ -270,7 +270,7 @@ resource "aws_iam_role" "flow_log_role" {
 resource "aws_flow_log" "vpc_flow_log" {
   vpc_id           = aws_vpc.vpcname_vpc.id
   traffic_type     = "ALL"
-  log_destination  = "arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:log-group:vpc-flow-logs"
+  log_destination = "arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:log-group:${var.environment}-${aws_vpc.vpcname_vpc.id}-vpc-flow-logs"
   iam_role_arn     = aws_iam_role.flow_log_role.arn
 }
 
