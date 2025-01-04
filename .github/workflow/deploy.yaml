@@ -1,0 +1,41 @@
+name: Terraform Plan and Apply
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      tfvars_file:
+        description: 'Path to the custom .tfvars file (Optional)'
+        required: false
+        default: 'uat-vpc.tfvars'  # Default value if no input is provided
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout code from repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up AWS credentials using OIDC
+      - name: Set up AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
+          role-session-name: GitHubActionsSession
+
+      # Step 3: Set OIDC Thumbprint as environment variable for Terraform
+      - name: Set OIDC Thumbprint as environment variable
+        run: echo "TF_VAR_oidc_thumbprint=${{ secrets.AWS_OIDC_THUMBPRINT }}" >> $GITHUB_ENV
+
+      # Step 4: Terraform Init with backend config from tfvars
+      - name: Terraform Init
+        run: terraform init -backend-config="bucket=${{ secrets.TF_BACKEND_BUCKET }}" -backend-config="key=${{ secrets.TF_BACKEND_KEY }}" -backend-config="region=${{ secrets.TF_REGION }}"
+
+      # Step 5: Terraform Plan and Apply using the custom or default .tfvars file
+      - name: Terraform Apply
+        run: |
+          TFVARS_FILE=${{ github.event.inputs.tfvars_file }}
+          terraform apply -var-file="$TFVARS_FILE" -auto-approve
